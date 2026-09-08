@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Raster to SVG — demo</title>
+    <!--
+      Development harness AND the integration contract.
+
+      Note data-rv-worker and data-rv-wasm: the page tells the script where
+      those two live, rather than the script hard-coding a path it could never
+      cache-bust. On the site these carry the content-hashed URLs.
+    -->
+    <link rel="stylesheet" href="demo.css" />
+    <link rel="stylesheet" href="../dist/raster-to-svg.css" />
+  </head>
+  <body>
+    <main class="wrap">
+      <p class="eyebrow">Free tool</p>
+      <h1>Turn a picture into a real cut file</h1>
+      <p class="lede">
+        Trace a PNG or JPEG into an SVG with genuine path nodes — the outlines a Cricut or
+        Silhouette can actually follow, not a bitmap hidden inside an SVG wrapper. It runs on
+        your own machine and nothing is uploaded.
+      </p>
+
+      <div
+        data-rv
+        class="rv"
+        data-rv-worker="../dist/raster-to-svg.worker.js"
+        data-rv-wasm="../dist/vtracer_wasm_bg.wasm"
+      >
+        <div data-rv-intake class="rv-intake">
+          <label class="btn" for="rv-file">Choose an image</label>
+          <input
+            id="rv-file"
+            type="file"
+            accept="image/png,image/jpeg,image/gif,image/bmp"
+            class="vh"
+          />
+          <p class="rv-note">…or drop one here, or paste from the clipboard.</p>
+        </div>
+
+        <p data-rv-error class="rv-error" role="status"></p>
+
+        <div data-rv-presets class="rv-presets" hidden></div>
+        <p data-rv-preset-note class="rv-note"></p>
+
+        <p data-rv-busy class="rv-busy" role="status" hidden></p>
+        <div data-rv-results></div>
+
+        <div class="rv-actions">
+          <a data-rv-download class="btn" hidden download>Download the SVG</a>
+        </div>
+
+        <p class="rv-caveat">
+          Two things worth knowing before you start. This traces flat colour, so photographic
+          gradients come out as visible bands — it is at its best on line work, logos and
+          clipart. And a detailed photograph can produce an enormous file, big enough to be slow
+          in whatever you open it in.
+        </p>
+      </div>
+
+      <noscript>
+        <p class="rv-note">
+          This needs JavaScript, because the tracing happens here on your machine rather than
+          on a server somewhere.
+        </p>
+      </noscript>
+    </main>
+
+    <script src="../dist/raster-to-svg.js" defer></script>
+  </body>
+</html>

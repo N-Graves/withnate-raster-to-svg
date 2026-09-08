@@ -1,0 +1,19 @@
+withnate-raster-to-svg v0.1.0
+
+raster-to-svg.js          11449 bytes   the page script
+raster-to-svg.css         2751 bytes
+raster-to-svg.worker.js   13640 bytes   the tracer, started on first use
+vtracer_wasm_bg.wasm      668378 bytes   fetched by the worker on first use
+
+All four go in the site's assets directory. The page script has to be told
+where the last two are, because a path hard-coded in the bundle could not
+be cache-busted:
+
+  <div data-rv data-rv-worker="/assets/raster-to-svg.worker.js?v=..."
+       data-rv-wasm="/assets/vtracer_wasm_bg.wasm?v=...">
+
+The page pays only for raster-to-svg.js unless somebody traces something.
+
+The site's Content-Security-Policy will need script-src 'wasm-unsafe-eval',
+worker-src 'self' and connect-src 'self'. Without the first, this fails
+SILENTLY - nothing in the console, no output at all.

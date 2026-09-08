@@ -1,0 +1,7 @@
+@visioncortex/vtracer@1.0.0-alpha.4
+MIT OR Apache-2.0
+https://github.com/visioncortex/vtracer
+
+vtracer_wasm_bg.wasm is upstream's binary, copied unmodified.
+vtracer_wasm.js is upstream's glue with the Node loader replaced by a
+browser fetch. Regenerate both with `npm run vendor`.
