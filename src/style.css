@@ -1,9 +1,3 @@
-/*
- * Raster to SVG styles. Namespaced .rv- so this drops into the site without
- * touching anything already there, and does not define .btn, .sw, .glass or
- * .vh, which belong to the site's own stylesheet.
- */
-
 .rv-intake {
   border: 2px dashed var(--line, rgba(51, 23, 11, 0.22));
   border-radius: 16px;
@@ -53,7 +47,6 @@
   color: var(--text-faint, #7d5a46);
 }
 
-/* Words, not just colour - this is a pass/fail claim about the output. */
 .rv-good { color: #2f6b52; }
 .rv-bad { color: var(--accent, #832305); }
 
@@ -71,8 +64,7 @@
   padding: 1rem;
   border: 1px solid var(--line, rgba(51, 23, 11, 0.14));
   border-radius: 12px;
-  /* A chequerboard, so transparent areas of the trace read as transparent
-     rather than as white shapes. */
+
   background-color: var(--surface, #fbf4e9);
   background-image:
     linear-gradient(45deg, rgba(51, 23, 11, 0.06) 25%, transparent 25%),
@@ -85,7 +77,6 @@
   max-height: 34rem;
 }
 
-/* The real SVG, not a picture of it - so what is on screen is the path data. */
 .rv-svg {
   display: block;
   width: 100%;

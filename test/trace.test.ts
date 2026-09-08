@@ -15,9 +15,7 @@ const svgOf = (body: string): string =>
 
 describe("presets", () => {
   it("carries the settings the bake-off actually chose", () => {
-    // colorPrecision 8 with layerDifference 4 - up from the library defaults
-    // of 6 and 16 - roughly doubled measured fidelity. If these drift, the
-    // tuning is lost and nothing would say so.
+
     expect(ARTWORK.colorPrecision).toBe(8);
     expect(ARTWORK.layerDifference).toBe(4);
     expect(ARTWORK.filterSpeckle).toBe(4);
@@ -30,8 +28,7 @@ describe("presets", () => {
   });
 
   it("traces a cutting file in one colour, not many layers", () => {
-    // A blade follows one outline. Forty stacked colour layers are useless to
-    // it, which is the whole reason this preset exists.
+
     expect(CUTTING.clustering).toBe("bw");
     expect(ARTWORK.clustering).toBe("color-cluster");
   });
@@ -62,16 +59,13 @@ describe("analyseSvg", () => {
   });
 
   it("catches an SVG that merely wraps a bitmap", () => {
-    // The trap this tool exists to avoid. Plenty of converters hand back an
-    // SVG with the original raster embedded: it opens, it looks right, and it
-    // is completely useless for cutting because there is no outline to follow.
+
     expect(analyseSvg(svgOf('<image href="photo.png"/>')).containsRaster).toBe(true);
     expect(analyseSvg(svgOf('<image href="data:image/png;base64,AAAA"/>')).containsRaster).toBe(true);
   });
 
   it("catches an embedded raster hidden in a fill or a pattern", () => {
-    // An <image> is the obvious form. A data: URI inside a pattern fill is the
-    // same thing wearing a hat, and a check for the element alone would miss it.
+
     expect(
       analyseSvg(svgOf('<defs><pattern><image xlink:href="data:image/jpeg;base64,x"/></pattern></defs><path d="M0 0"/>'))
         .containsRaster,
@@ -85,8 +79,7 @@ describe("analyseSvg", () => {
   });
 
   it("measures bytes as encoded, not as characters", () => {
-    // A path is ASCII, but a title or a colour name need not be, and counting
-    // string length would understate the file somebody downloads.
+
     const withUnicode = svgOf("<title>café — ★</title>");
     expect(analyseSvg(withUnicode).bytes).toBeGreaterThan(withUnicode.length);
   });
@@ -102,7 +95,7 @@ describe("noticesFor", () => {
   const clean = { bytes: 40_000, pathCount: 120, containsRaster: false, oversized: false };
 
   it("says nothing when there is nothing worth saying", () => {
-    // Rather than manufacturing reassurance nobody asked for.
+
     expect(noticesFor(clean, 30_000)).toEqual([]);
   });
 
@@ -128,8 +121,7 @@ describe("noticesFor", () => {
   });
 
   it("does not repeat the size point twice for one file", () => {
-    // The oversized warning and the ratio note would otherwise both fire and
-    // say roughly the same thing in different words.
+
     const n = noticesFor({ ...clean, bytes: 40_000_000, oversized: true }, 100_000);
     expect(n.filter((s) => s.includes("not a compression format"))).toHaveLength(0);
   });

@@ -1,10 +1,4 @@
-/**
- * A static server for the demo page. Development only.
- *
- * Hand-rolled rather than a dependency: it serves five files from one folder,
- * and the tool itself ships with no runtime dependencies at all, so adding a
- * dev server to the tree would be the largest thing in it.
- */
+
 
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
@@ -23,8 +17,8 @@ const TYPES = {
   ".webp": "image/webp",
   ".gif": "image/gif",
   ".svg": "image/svg+xml",
-  // instantiateStreaming refuses anything but application/wasm. The vendored
-  // loader falls back to arrayBuffer when it has to, but the fast path needs this.
+  
+  
   ".wasm": "application/wasm",
 };
 
@@ -33,8 +27,8 @@ createServer(async (req, res) => {
     const url = new URL(req.url ?? "/", "http://localhost");
     let path = decodeURIComponent(url.pathname);
     if (path === "/" || path.endsWith("/")) path += "index.html";
-    // Contain the served tree. Trivial here, but a dev server that will happily
-    // read ../../.ssh is a bad habit to leave lying around in a public repo.
+    
+    
     const target = join(ROOT, normalize(path).replace(/^(\.\.[/\\])+/, ""));
     if (!target.startsWith(ROOT)) {
       res.writeHead(403).end("Forbidden");

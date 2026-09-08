@@ -1,9 +1,4 @@
-/**
- * Tracing settings, and what to say about the result.
- *
- * Pure. The tracing itself happens in WebAssembly in a worker; everything with
- * a judgement in it is here, so it can be tested without a browser.
- */
+
 
 export interface TraceOptions {
   clustering?: "color-cluster" | "bw";
@@ -18,19 +13,7 @@ export interface TraceOptions {
   pathPrecision?: number;
 }
 
-/**
- * Settings chosen by a real SSIM bake-off, run on this business's own artwork
- * against the alternatives.
- *
- * `colorPrecision` 8 with `layerDifference` 4 - up from the library's own
- * defaults of 6 and 16 - roughly doubled fidelity on photographic content:
- * SSIM 0.907 to 0.948 on a gradient-heavy source, and 0.663 to 0.860 on a
- * detail-dense one. 8 is the maximum the library accepts; below about 2 on
- * layerDifference the layer count explodes for no visible gain.
- *
- * `filterSpeckle` 4 drops single-pixel noise that would otherwise become
- * hundreds of tiny paths a cutting machine would try to follow.
- */
+
 export const ARTWORK: Readonly<TraceOptions> = Object.freeze({
   clustering: "color-cluster",
   mode: "spline",
@@ -44,14 +27,7 @@ export const ARTWORK: Readonly<TraceOptions> = Object.freeze({
   pathPrecision: 8,
 });
 
-/**
- * Single-colour trace, which is what a blade actually wants.
- *
- * A cutting machine follows one outline; it has no use for forty colour
- * layers stacked on top of each other. Binary clustering gives closed paths
- * around the dark areas and nothing else, and the higher speckle filter is
- * there because every stray dot in this mode becomes a separate cut.
- */
+
 export const CUTTING: Readonly<TraceOptions> = Object.freeze({
   clustering: "bw",
   mode: "spline",
@@ -85,37 +61,55 @@ export const optionsFor = (id: PresetId): TraceOptions => ({
   ...(id === "cutting" ? CUTTING : ARTWORK),
 });
 
-// ------------------------------------------------------------- the result
 
-/** A detail-dense photograph reached 76MB even at tuned settings. */
+
+
 export const SIZE_WARNING_BYTES = 15_000_000;
 
 export interface SvgAnalysis {
   bytes: number;
   pathCount: number;
-  /** True if the SVG merely wraps the original bitmap. */
+  
   containsRaster: boolean;
-  /** True if it is large enough to hang whatever opens it. */
+  
   oversized: boolean;
+  
+  containsActiveContent: boolean;
 }
 
-/**
- * Look at what came back.
- *
- * The raster check is the one that matters and it is the whole positioning of
- * this tool. Plenty of converters hand back an SVG with the original bitmap
- * embedded inside it: it opens, it looks right, and it is completely useless
- * for cutting because there is no outline for the blade to follow. Asserting
- * that our own output has none is cheap, and it is checked on every trace
- * rather than only in the tests.
- */
+
+const utf8Length = (s: string): number => {
+  let n = 0;
+  for (let i = 0; i < s.length; i += 1) {
+    const c = s.charCodeAt(i);
+    if (c < 0x80) n += 1;
+    else if (c < 0x800) n += 2;
+    else if (c >= 0xd800 && c <= 0xdbff) {
+      n += 4;
+      i += 1;
+    } else n += 3;
+  }
+  return n;
+};
+
+const countMatches = (s: string, source: string): number => {
+  const re = new RegExp(source, "g");
+  let n = 0;
+  while (re.exec(s) !== null) n += 1;
+  return n;
+};
+
+const ACTIVE_CONTENT = /<script\b|\son\w+\s*=|javascript:/i;
+
+
 export const analyseSvg = (svg: string): SvgAnalysis => {
-  const bytes = new TextEncoder().encode(svg).length;
+  const bytes = utf8Length(svg);
   return {
     bytes,
-    pathCount: (svg.match(/<path\b/g) ?? []).length,
+    pathCount: countMatches(svg, "<path\\b"),
     containsRaster: /<image\b/i.test(svg) || /data:image\//i.test(svg),
     oversized: bytes >= SIZE_WARNING_BYTES,
+    containsActiveContent: ACTIVE_CONTENT.test(svg),
   };
 };
 
@@ -127,14 +121,14 @@ const round = (n: number, dp = 1): number => {
 export const formatBytes = (n: number): string =>
   n >= 1_000_000 ? `${round(n / 1_000_000)} MB` : `${Math.round(n / 1000)} KB`;
 
-/**
- * What to tell the person, in order of how much it matters.
- *
- * Returns an empty list when there is nothing worth saying, rather than
- * manufacturing reassurance nobody asked for.
- */
+
 export const noticesFor = (analysis: SvgAnalysis, sourceBytes: number): string[] => {
   const out: string[] = [];
+  if (analysis.containsActiveContent) {
+    out.push(
+      "This SVG carries something that could run, which the tracer should never produce — it has not been drawn on screen, and it should be reported rather than opened.",
+    );
+  }
   if (analysis.containsRaster) {
     out.push(
       "This SVG has a bitmap embedded in it rather than real paths, which should not happen — please report it, because a file like that is no use for cutting.",

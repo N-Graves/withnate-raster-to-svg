@@ -1,24 +1,9 @@
-/**
- * Raster to SVG - entry point.
- *
- * Runs entirely in the browser: the image is read, traced in WebAssembly in a
- * worker, and handed back. Nothing is uploaded and nothing is stored.
- *
- * ⚠️ FOR WHOEVER WRITES THE SITE'S CONTENT-SECURITY-POLICY. This tool needs
- * three things, and the first one fails SILENTLY - nothing in the console, the
- * tool simply never produces output:
- *
- *   script-src   'wasm-unsafe-eval'   to compile WebAssembly at all
- *   worker-src   'self'               for the worker (falls back to script-src)
- *   connect-src  'self'               to fetch the .wasm binary
- *
- * `'wasm-unsafe-eval'` is much narrower than `'unsafe-eval'`: it permits
- * WebAssembly compilation and nothing else. No CSP ships on the site today, so
- * this works as it stands - but the site is built around one, and the day it
- * lands without these this tool stops working with no error to find.
- */
-
-import { attachIntake, mount } from "@nasdigitaluk/withnate-tool-core";
+import {
+  attachIntake,
+  measureImage,
+  mount,
+  readHeaderBytes,
+} from "@nasdigitaluk/withnate-tool-core";
 import {
   PRESETS,
   analyseSvg,
@@ -29,8 +14,9 @@ import {
 } from "./trace.js";
 import type { TraceRequest, TraceResponse } from "./worker.js";
 
-/** Above this, tracing takes long enough that people assume it has hung. */
 const SLOW_SOURCE_BYTES = 2_000_000;
+
+const MAX_SOURCE_PIXELS = 24e6;
 
 const h = (tag: string, attrs: Record<string, string | boolean> = {}, ...kids: Array<Node | string | null>): HTMLElement => {
   const n = document.createElement(tag);
@@ -53,9 +39,6 @@ mount("[data-rv]", ({ root }) => {
   const download = root.querySelector<HTMLAnchorElement>("[data-rv-download]");
   if (!intake || !results) return;
 
-  // Supplied by the page so the site can hand over content-hashed URLs. A path
-  // hard-coded here would be cached for an hour with no way to bust it, which
-  // is exactly the trap the site's own asset helper exists to avoid.
   const workerUrl = root.dataset["rvWorker"] ?? "./raster-to-svg.worker.js";
   const wasmUrl = root.dataset["rvWasm"] ?? "./vtracer_wasm_bg.wasm";
 
@@ -106,14 +89,15 @@ mount("[data-rv]", ({ root }) => {
     const notices = noticesFor(analysis, lastFile?.bytes.length ?? 0);
 
     const preview = h("div", { class: "rv-preview" });
-    // Inserted as markup rather than as an <img src="blob:">, so what is on
-    // screen is the actual path data and not a picture of it.
-    preview.innerHTML = svg;
-    const el = preview.querySelector("svg");
-    if (el) {
-      el.removeAttribute("width");
-      el.removeAttribute("height");
-      el.setAttribute("class", "rv-svg");
+
+    if (!analysis.containsActiveContent) {
+      preview.innerHTML = svg;
+      const el = preview.querySelector("svg");
+      if (el) {
+        el.removeAttribute("width");
+        el.removeAttribute("height");
+        el.setAttribute("class", "rv-svg");
+      }
     }
 
     results.replaceChildren(
@@ -153,8 +137,7 @@ mount("[data-rv]", ({ root }) => {
     requestId += 1;
     const message: TraceRequest = {
       id: requestId,
-      // A copy, because the buffer is transferred and the original would be
-      // detached - which would break re-tracing with the other preset.
+
       bytes: lastFile.bytes.slice(),
       options: optionsFor(preset) as unknown as Record<string, unknown>,
       wasmUrl,
@@ -165,11 +148,21 @@ mount("[data-rv]", ({ root }) => {
   attachIntake(intake, {
     onReject: showError,
     onFile: (file) => {
-      void file.arrayBuffer().then((buf) => {
+      void (async () => {
+
+        const header = measureImage(await readHeaderBytes(file));
+        if (header && header.width * header.height > MAX_SOURCE_PIXELS) {
+          const mp = Math.round((header.width * header.height) / 1e5) / 10;
+          showError(
+            `That image is ${mp} megapixels. Tracing it would take minutes and produce an SVG too large to open, let alone cut. Flat artwork at a more ordinary size is what this is for.`,
+          );
+          return;
+        }
+        const buf = await file.arrayBuffer();
         lastFile = { bytes: new Uint8Array(buf), name: file.name };
         if (presetHost) presetHost.hidden = false;
         trace();
-      });
+      })().catch(() => showError("That file could not be read."));
     },
   });
 
