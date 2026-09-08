@@ -16,7 +16,7 @@
     "vendor": "node scripts/vendor.mjs"
   },
   "dependencies": {
-    "@nasdigitaluk/withnate-tool-core": "^0.2.0"
+    "@nasdigitaluk/withnate-tool-core": "^0.3.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
