@@ -1,0 +1,121 @@
+/*
+ * Raster to SVG styles. Namespaced .rv- so this drops into the site without
+ * touching anything already there, and does not define .btn, .sw, .glass or
+ * .vh, which belong to the site's own stylesheet.
+ */
+
+.rv-intake {
+  border: 2px dashed var(--line, rgba(51, 23, 11, 0.22));
+  border-radius: 16px;
+  padding: clamp(1.25rem, 5vw, 2.25rem);
+  text-align: center;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.rv-intake.is-dragging {
+  border-color: var(--accent, #832305);
+  background: var(--surface-2, #f6ead8);
+}
+
+.rv-error:empty { display: none; }
+
+.rv-error {
+  margin: 0.9rem 0 0;
+  padding: 0.7rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid var(--accent, #832305);
+  color: var(--accent, #832305);
+  font-size: 0.92rem;
+}
+
+.rv-busy {
+  margin: 1rem 0 0;
+  color: var(--text-dim, #6b4230);
+  font-size: 0.92rem;
+}
+
+.rv-presets {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin: 1.25rem 0 0.4rem;
+}
+
+.rv-stats {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin: 1.5rem 0 0;
+  font-family: var(--f-hud, ui-monospace, monospace);
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-faint, #7d5a46);
+}
+
+/* Words, not just colour - this is a pass/fail claim about the output. */
+.rv-good { color: #2f6b52; }
+.rv-bad { color: var(--accent, #832305); }
+
+.rv-notice {
+  margin: 0.7rem 0 0;
+  padding-left: 0.9rem;
+  border-left: 3px solid var(--line, rgba(51, 23, 11, 0.2));
+  color: var(--text-dim, #6b4230);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.rv-preview {
+  margin: 1.25rem 0 0;
+  padding: 1rem;
+  border: 1px solid var(--line, rgba(51, 23, 11, 0.14));
+  border-radius: 12px;
+  /* A chequerboard, so transparent areas of the trace read as transparent
+     rather than as white shapes. */
+  background-color: var(--surface, #fbf4e9);
+  background-image:
+    linear-gradient(45deg, rgba(51, 23, 11, 0.06) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(51, 23, 11, 0.06) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(51, 23, 11, 0.06) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(51, 23, 11, 0.06) 75%);
+  background-size: 18px 18px;
+  background-position: 0 0, 0 9px, 9px -9px, -9px 0;
+  overflow: auto;
+  max-height: 34rem;
+}
+
+/* The real SVG, not a picture of it - so what is on screen is the path data. */
+.rv-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 32rem;
+}
+
+.rv-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+  margin: 1.25rem 0 0;
+}
+
+.rv-note {
+  color: var(--text-dim, #6b4230);
+  font-size: 0.9rem;
+  line-height: 1.55;
+  margin: 0.4rem 0 0;
+}
+
+.rv-caveat {
+  margin: 1.75rem 0 0;
+  padding-left: 0.9rem;
+  border-left: 3px solid var(--line, rgba(51, 23, 11, 0.2));
+  color: var(--text-dim, #6b4230);
+  font-size: 0.9rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rv-intake { transition: none; }
+}
