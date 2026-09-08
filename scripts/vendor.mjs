@@ -1,23 +1,3 @@
-/**
- * Vendor the vtracer WebAssembly build into a browser-usable form.
- *
- * Upstream publishes a `wasm-pack --target nodejs` build. The WASM binary
- * itself is portable; only the loader is not - the last five lines read the
- * file off disk with `fs`, which a browser cannot do. Everything above them is
- * ordinary wasm-bindgen glue that runs anywhere.
- *
- * So this rewrites exactly that block into an async `init(url)` and converts
- * the two CommonJS exports to ESM. It is a script rather than a hand-edit of a
- * 436-line generated file because it can be re-run against a new upstream
- * version, and because it ASSERTS on what it is replacing: if upstream changes
- * the loader, this fails loudly instead of silently producing a module that
- * looks fine and never instantiates.
- *
- * The binary is vendored rather than fetched from a CDN because the site
- * refuses third-party requests of any kind - its own build check fails on a
- * Google Fonts URL.
- */
-
 import { copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 
@@ -29,7 +9,6 @@ const GLUE_IN = new URL("pkg/vtracer_wasm.js", pkgDir);
 const WASM_IN = new URL("pkg/vtracer_wasm_bg.wasm", pkgDir);
 const OUT_DIR = new URL("../vendor/", import.meta.url);
 
-/** The exact Node loader to replace. Asserted, not searched for loosely. */
 const NODE_LOADER = `const wasmPath = \`\${__dirname}/vtracer_wasm_bg.wasm\`;
 const wasmBytes = require('fs').readFileSync(wasmPath);
 const wasmModule = new WebAssembly.Module(wasmBytes);
@@ -92,8 +71,6 @@ for (const [from, to] of EXPORTS) {
   out = out.replace(from, to);
 }
 
-// A second require() would mean another Node dependency slipped in, and the
-// bundle would fail at runtime in a browser rather than at build time here.
 const remaining = out.match(/\brequire\s*\(/g);
 if (remaining) {
   throw new Error(`${remaining.length} require() call(s) still in the vendored glue.`);

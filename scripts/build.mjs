@@ -1,13 +1,3 @@
-/**
- * Three outputs, not one: the page script, the tracing worker, and the
- * WebAssembly binary the worker loads on demand.
- *
- * The tracer is deliberately NOT bundled into the page script. It is the
- * heaviest thing here by a wide margin, and a visitor who never traces an
- * image should never pay for it - so it sits behind the worker, which is
- * itself only started on the first drop.
- */
-
 import { build } from "esbuild";
 import { copyFile, mkdir, readFile, stat, writeFile } from "node:fs/promises";
 

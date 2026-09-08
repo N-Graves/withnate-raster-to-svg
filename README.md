@@ -116,11 +116,48 @@ Plain IIFE, does nothing unless the page contains `data-rv`.
 
 The stylesheet defines only `.rv-` classes, enforced by a smoke check.
 
+## Structured data
+
+`demo/index.html` carries a static JSON-LD `WebApplication` block. Verified against the site's own
+tooling rather than assumed: `scripts/check.mjs` fails a page with a second inline `<script>` but
+**explicitly exempts `type="application/ld+json"`**, and `scripts/seo.mjs` fails the build on a block
+that does not parse or carries no `@type`. No rating, no review count.
+
+## Security posture
+
+Nothing is uploaded, stored or transmitted, and the tracer is vendored — **confirmed in a browser
+that a full trace makes zero off-origin requests**, which is what the site's own build check demands
+and what the `wasm-unsafe-eval` note above is protecting.
+
+**This tool contains the only `innerHTML` in the whole set, and it is now gated.** The preview
+inserts the SVG as markup on purpose, so that what is on screen is the real path data rather than a
+picture of it. The string cannot carry anything the visitor wrote — it is generated from pixels —
+but it comes out of a **third-party WebAssembly binary**, and unlike an invariant between two lists
+this repo owns, "vtracer never emits a script" is not something provable from here. So every trace
+is checked for `<script`, an inline `on…=` handler or a `javascript:` target, and **the SVG is not
+put into the document at all if any of those appear**, with a notice saying so ahead of every other
+notice.
+
+That is a deliberate contrast with the unreachable guard removed from the metadata viewer in the
+same pass: this one guards something outside the repo's control, so it can genuinely fire.
+
+**Input is capped at 24 megapixels, read from the header before the file is buffered.** Tracing is
+roughly linear in pixels and is seconds of solid CPU on a couple of megapixels, so a 40 megapixel
+photograph is minutes of work producing an SVG far past the 76MB that already hangs whatever opens
+it. The worker keeps the page responsive throughout, so this is not a crash — it is a visitor
+watching a spinner for a result they could not use. 24 megapixels is a full-frame camera at maximum,
+well above the flat artwork this is actually for.
+
+The analysis also stopped copying the SVG to measure it. `TextEncoder().encode(svg).length` and
+`svg.match(/<path/g)` both allocate in proportion to the output, at exactly the size this tool warns
+about, so byte length is counted directly and matches are counted without collecting them. Pinned by
+tests that check both against `TextEncoder` on multi-byte and astral characters.
+
 ## Testing
 
 ```bash
 npm run lint    # tsc --noEmit
-npm test        # 19 tests
+npm test        # 27 tests
 npm run smoke   # 26 checks against the built bundles
 npm run demo    # serves demo/ on :4177
 ```

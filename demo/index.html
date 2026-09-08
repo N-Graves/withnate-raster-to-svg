@@ -4,15 +4,28 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Raster to SVG — demo</title>
-    <!--
-      Development harness AND the integration contract.
 
-      Note data-rv-worker and data-rv-wasm: the page tells the script where
-      those two live, rather than the script hard-coding a path it could never
-      cache-bust. On the site these carry the content-hashed URLs.
-    -->
     <link rel="stylesheet" href="demo.css" />
     <link rel="stylesheet" href="../dist/raster-to-svg.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Raster to SVG converter",
+        "applicationCategory": "DesignApplication",
+        "operatingSystem": "Any modern browser",
+        "browserRequirements": "Requires JavaScript and WebAssembly",
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "GBP" },
+        "featureList": [
+          "Traces PNG and JPEG to real vector paths, not an embedded bitmap",
+          "A cutting preset for Cricut and Silhouette: one colour, closed outlines",
+          "A colour preset that keeps the artwork as stacked layers",
+          "Says how many paths came out and how large the file is"
+        ],
+        "permissions": "None. The image is traced in the browser and never uploaded."
+      }
+    </script>
   </head>
   <body>
     <main class="wrap">
