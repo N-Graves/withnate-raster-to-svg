@@ -1,5 +1,6 @@
 import {
   attachIntake,
+  formatBytes,
   h,
   measureImage,
   mount,
@@ -8,7 +9,6 @@ import {
 import {
   PRESETS,
   analyseSvg,
-  formatBytes,
   noticesFor,
   optionsFor,
   type PresetId,

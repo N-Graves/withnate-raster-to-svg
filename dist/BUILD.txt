@@ -1,6 +1,6 @@
 withnate-raster-to-svg v0.1.0
 
-raster-to-svg.js          25182 bytes   the page script
+raster-to-svg.js          25251 bytes   the page script
 raster-to-svg.css         2751 bytes
 raster-to-svg.worker.js   13640 bytes   the tracer, started on first use
 vtracer_wasm_bg.wasm      668378 bytes   fetched by the worker on first use
