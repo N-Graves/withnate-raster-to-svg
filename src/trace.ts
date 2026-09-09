@@ -1,3 +1,5 @@
+import { formatBytes } from "@nasdigitaluk/withnate-tool-core";
+
 
 
 export interface TraceOptions {
@@ -112,15 +114,6 @@ export const analyseSvg = (svg: string): SvgAnalysis => {
     containsActiveContent: ACTIVE_CONTENT.test(svg),
   };
 };
-
-const round = (n: number, dp = 1): number => {
-  const f = 10 ** dp;
-  return Math.round(n * f) / f;
-};
-
-export const formatBytes = (n: number): string =>
-  n >= 1_000_000 ? `${round(n / 1_000_000)} MB` : `${Math.round(n / 1000)} KB`;
-
 
 export const noticesFor = (analysis: SvgAnalysis, sourceBytes: number): string[] => {
   const out: string[] = [];

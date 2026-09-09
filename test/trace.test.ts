@@ -5,7 +5,6 @@ import {
   PRESETS,
   SIZE_WARNING_BYTES,
   analyseSvg,
-  formatBytes,
   noticesFor,
   optionsFor,
 } from "../src/trace.js";
@@ -124,13 +123,5 @@ describe("noticesFor", () => {
 
     const n = noticesFor({ ...clean, bytes: 40_000_000, oversized: true }, 100_000);
     expect(n.filter((s) => s.includes("not a compression format"))).toHaveLength(0);
-  });
-});
-
-describe("formatBytes", () => {
-  it("switches to megabytes where a person would", () => {
-    expect(formatBytes(240_000)).toBe("240 KB");
-    expect(formatBytes(15_000_000)).toBe("15 MB");
-    expect(formatBytes(1_500_000)).toBe("1.5 MB");
   });
 });
