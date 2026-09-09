@@ -1,5 +1,6 @@
 import {
   attachIntake,
+  h,
   measureImage,
   mount,
   readHeaderBytes,
@@ -17,18 +18,6 @@ import type { TraceRequest, TraceResponse } from "./worker.js";
 const SLOW_SOURCE_BYTES = 2_000_000;
 
 const MAX_SOURCE_PIXELS = 24e6;
-
-const h = (tag: string, attrs: Record<string, string | boolean> = {}, ...kids: Array<Node | string | null>): HTMLElement => {
-  const n = document.createElement(tag);
-  for (const [k, v] of Object.entries(attrs)) {
-    if (v === false) continue;
-    if (k === "class") n.className = String(v);
-    else if (v === true) n.setAttribute(k, "");
-    else n.setAttribute(k, String(v));
-  }
-  for (const c of kids) if (c !== null) n.append(typeof c === "string" ? document.createTextNode(c) : c);
-  return n;
-};
 
 mount("[data-rv]", ({ root }) => {
   const intake = root.querySelector<HTMLElement>("[data-rv-intake]");

@@ -477,6 +477,27 @@
     }
   };
 
+  // node_modules/@nasdigitaluk/withnate-tool-core/dist/dom.js
+  var h = (tag, attrs = {}, ...children) => {
+    const node = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) {
+      if (v === false || v === null || v === void 0)
+        continue;
+      if (k === "class")
+        node.className = String(v);
+      else if (v === true)
+        node.setAttribute(k, "");
+      else
+        node.setAttribute(k, String(v));
+    }
+    for (const c of children) {
+      if (c === null || c === void 0)
+        continue;
+      node.append(typeof c === "string" ? document.createTextNode(c) : c);
+    }
+    return node;
+  };
+
   // src/trace.ts
   var ARTWORK = Object.freeze({
     clustering: "color-cluster",
@@ -586,17 +607,6 @@
   // src/index.ts
   var SLOW_SOURCE_BYTES = 2e6;
   var MAX_SOURCE_PIXELS = 24e6;
-  var h = (tag, attrs = {}, ...kids) => {
-    const n = document.createElement(tag);
-    for (const [k, v] of Object.entries(attrs)) {
-      if (v === false) continue;
-      if (k === "class") n.className = String(v);
-      else if (v === true) n.setAttribute(k, "");
-      else n.setAttribute(k, String(v));
-    }
-    for (const c of kids) if (c !== null) n.append(typeof c === "string" ? document.createTextNode(c) : c);
-    return n;
-  };
   mount("[data-rv]", ({ root }) => {
     const intake = root.querySelector("[data-rv-intake]");
     const results = root.querySelector("[data-rv-results]");
